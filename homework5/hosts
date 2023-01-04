@@ -1,0 +1,15 @@
+[group1]
+host1 ansible_host=54.84.133.89
+
+[group2]
+host2 ansible_host=3.87.220.163
+
+[group3]
+host3 ansible_host=18.212.201.149
+
+[iaas:children]
+group1
+group2
+
+[all:vars]
+ansible_user=ubuntu

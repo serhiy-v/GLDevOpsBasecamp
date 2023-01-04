@@ -1,0 +1,14 @@
+---
+
+  - name: Create file
+    hosts: iaas
+    become: yes
+    roles:
+      - create_file
+
+  
+  - name: Fetch Linux distro information
+    hosts: all
+    gather_facts: yes
+    roles:
+      - fetch_linux_distro
