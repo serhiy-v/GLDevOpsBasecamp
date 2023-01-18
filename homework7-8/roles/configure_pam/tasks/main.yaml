@@ -1,0 +1,7 @@
+---
+
+  - name: Configure pam_cracklib
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-password
+      regexp: "pam_cracklib.so"
+      line: "password  requisite pam_cracklib.so  retry=3 minlen=8 enforce_for_root  reject_username"

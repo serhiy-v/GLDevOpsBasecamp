@@ -1,0 +1,2 @@
+[group1]
+host1 ansible_host=<instance_ip> ansible_user=<instance_user>

@@ -1,0 +1,7 @@
+---
+
+  - name: Get pam_cracklib
+    ansible.builtin.apt:
+      name: libpam-cracklib
+      state: present 
+      update_cache: yes

@@ -1,0 +1,8 @@
+---
+
+  - name: Create PAM
+    hosts: group1
+    become: yes
+    roles:
+      - install_pam
+      - configure_pam
