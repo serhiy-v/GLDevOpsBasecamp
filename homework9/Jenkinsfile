@@ -24,6 +24,15 @@ pipeline {
             }
         }
 
+        stage('Stage for Test branch') {
+            when {
+                expression { return env.BRANCH_NAME == 'test' }
+            }
+            steps {
+                echo "Stage only for test branch"
+            }
+        } 
+
     }
      post {
         success { 
