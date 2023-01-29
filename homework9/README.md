@@ -2,6 +2,8 @@
 
 ## Structure:
 
+**[Script](https://github.com/serhiy-v/GLDevOpsBasecamp/blob/master/homework9/install-jenkins.sh) for automatic install of Jenkins and user configuration**
+
 1. Created AWS EC2 instance and install Jenkins on it:
 
 ![Screenshot from 2023-01-26 21-07-53](https://user-images.githubusercontent.com/61023601/214927180-e627440d-3434-4292-9ac1-1007974f3506.png)
