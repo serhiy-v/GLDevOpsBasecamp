@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: nginx-availability
+  namespace: servers
+spec:
+  schedule: "*/3 * * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 100
+      template:
+        spec:
+          containers:
+          - name: nginx-ping
+            image: curlimages/curl:latest
+            command:
+            - sh
+            - -c
+            - curl http://10.132.0.3:30036
+          restartPolicy: Never
