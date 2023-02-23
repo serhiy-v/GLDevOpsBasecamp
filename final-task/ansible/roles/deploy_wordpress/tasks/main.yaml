@@ -1,0 +1,41 @@
+---
+
+  - name: Create .kube/
+    ansible.builtin.file:
+      path: .kube/
+      state: directory
+
+  - name: Copy admin.conf
+    ansible.builtin.copy:
+      remote_src: yes
+      src: /etc/kubernetes/admin.conf
+      dest: .kube/config
+
+  - name: Verify Permissions on .kube/config
+    ansible.builtin.file:
+      path: .kube/config
+      mode: '0777'
+
+  - name: Install Helm
+    community.general.snap:
+      name: helm
+      classic: true
+
+  - name: Create Secrets
+    ansible.builtin.shell:
+      cmd: kubectl create secret generic db-secret --from-literal=user={{ user }} --from-literal=password={{ password }}  --from-literal=db-ip={{ ip }} --from-literal=db={{ db }}
+  
+  - name: Deploy cert-manager
+    ansible.builtin.shell:
+      cmd: kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.yaml
+  
+  - name: Copy wordpress directory
+    ansible.builtin.copy:
+      src: wordpress/
+      dest: wordpress/
+
+  - name: Deploy wordpress
+    kubernetes.core.helm:
+      name: wordpress
+      chart_ref: wordpress/
+      release_namespace: default

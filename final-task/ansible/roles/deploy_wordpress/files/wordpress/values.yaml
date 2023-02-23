@@ -1,0 +1,8 @@
+replicaCount: 1
+
+container:
+  image: wordpress
+
+port: 80
+
+protocol: TCP

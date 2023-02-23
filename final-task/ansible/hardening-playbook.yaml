@@ -1,0 +1,7 @@
+---
+
+  - name: Hardening
+    hosts: host
+    become: yes
+    roles:
+      -  hardening

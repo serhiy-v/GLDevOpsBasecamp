@@ -1,0 +1,468 @@
+---
+
+  - name: Disable Mounting of cramfs filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/cramfs.conf
+      line: install cramfs /bin/true
+      create: yes
+
+  - name: Disable Mounting of freevxfs filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/freevxfs.conf
+      line: install freevxfs /bin/true
+      create: yes
+
+  - name: Disable Mounting of jffs2 filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/jffs2.conf
+      line: install jffs2 /bin/true
+      create: yes
+
+  - name: Disable Mounting of hfs filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/hfs.conf
+      line: install hfs /bin/true
+      create: yes
+
+  - name: Disable Mounting of hfsplus filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/hfsplus.conf
+      line: install hfsplus /bin/true
+      create: yes
+
+  - name: Disable Mounting of udf filesystem
+    ansible.builtin.lineinfile:
+      path: /etc/modprobe.d/udf.conf
+      line: install udf /bin/true
+      create: yes
+
+  - name: Install AIDE
+    ansible.builtin.apt:
+      name: aide
+      state: latest
+      update_cache: yes
+
+  - name: Restrict core dumps
+    ansible.builtin.lineinfile:
+      path: etc/security/limits.conf
+      line: "* hard core 0"
+      create: yes
+  
+  - name: Disable core dumps
+    ansible.builtin.shell: 
+      cmd: sysctl -w fs.suid_dumpable=0
+
+  - name: Enable AppArmor in the bootloader configuration
+    ansible.builtin.lineinfile:
+      path: /etc/default/grub
+      state: present
+      regexp: 'GRUB_CMDLINE_LINUX'
+      line: GRUB_CMDLINE_LINUX="apparmor=1 security=apparmor"
+
+  - name: Update the grub2 configuration
+    ansible.builtin.shell: 
+      cmd: update-grub
+
+  - name: Configure local login warning banner
+    ansible.builtin.lineinfile:
+      path: /etc/issue
+      state: present
+      regexp: 'Ubuntu'
+      line: Authorized uses only. All activity may be monitored and reported.
+
+  - name: Configure remote login warning banner
+    ansible.builtin.lineinfile:
+      path: /etc/issue.net
+      state: present
+      regexp: 'Ubuntu'
+      line: Authorized uses only. All activity may be monitored and reported.
+
+  - name: Uninstall rsync
+    ansible.builtin.apt:
+      name: rsync
+      state: absent
+  
+  - name: Uninstall telnet
+    ansible.builtin.apt:
+      name: rsync
+      state: absent
+
+  - name: Install nftables
+    ansible.builtin.apt:
+      name: nftables
+      state: present
+      update_cache: yes
+  
+  - name: Install iptables-persistent
+    ansible.builtin.apt:
+      name: iptables-persistent
+      state: present
+      update_cache: yes
+  
+  - name: Configure journald to send logs to rsyslog
+    ansible.builtin.lineinfile:
+      path: /etc/systemd/journald.conf
+      state: present
+      regexp: '#ForwardToSyslog'
+      line: ForwardToSyslog=yes
+  
+  - name: Configure journald to compress large log files
+    ansible.builtin.lineinfile:
+      path: /etc/systemd/journald.conf
+      state: present
+      regexp: '#Compress'
+      line: Compress=yes
+  
+  - name: Configure journald to write logfiles to persistent disk
+    ansible.builtin.lineinfile:
+      path: /etc/systemd/journald.conf
+      state: present
+      regexp: '#Storage'
+      line: Storage=persistent
+
+  - name: Assigns  logrotate appropriate permissions
+    ansible.builtin.lineinfile:
+      path: /etc/logrotate.conf
+      state: present
+      regexp: 'create'
+      line: create 0640 root utmp
+
+  - name: Verify Permissions on crontab
+    ansible.builtin.file:
+      path: /etc/crontab
+      mode: '0600'
+  
+  - name: Verify Permissions on cron.hourly
+    ansible.builtin.file:
+      path: /etc/cron.hourly
+      mode: '0700'
+  
+  - name: Verify Permissions on cron.daily
+    ansible.builtin.file:
+      path: /etc/cron.daily
+      mode: '0700'
+
+  - name: Verify Permissions on cron.weekly
+    ansible.builtin.file:
+      path: /etc/cron.weekly
+      mode: '0700'
+
+  - name: Verify Permissions on cron.monthly
+    ansible.builtin.file:
+      path: /etc/cron.monthly
+      mode: '0700'
+
+  - name: Verify Permissions on cron.d
+    ansible.builtin.file:
+      path: /etc/cron.d
+      mode: '0700'
+
+  - name: Remove /etc/cron.deny
+    ansible.builtin.file:
+      path: /etc/cron.deny
+      state: absent
+
+  - name: Create /etc/cron.allow
+    ansible.builtin.file:
+      path: /etc/cron.allow
+      state: touch
+      mode: '0700'
+
+  - name: Remove /etc/at.deny
+    ansible.builtin.file:
+      path: /etc/at.deny
+      state: absent
+
+  - name: Create /etc/at.allow
+    ansible.builtin.file:
+      path: /etc/at.allow
+      state: touch
+      mode: '0700'
+
+  - name: Ensure sudo commands use pty
+    ansible.builtin.lineinfile:
+      path: /etc/sudoers
+      line: Defaults use_pty
+      create: yes
+
+  - name: Ensure sudo log file exists
+    ansible.builtin.lineinfile:
+      path: /etc/sudoers
+      line: Defaults logfile="/var/log/sudo.log"
+      create: yes
+
+  - name: Verify Permissions on SSH Server config file
+    ansible.builtin.file:
+      path: /etc/ssh/sshd_config
+      mode: '0600'
+
+  - name: Set SSH MaxAuthTries to 4
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '#MaxAuthTries'
+      line: MaxAuthTries 4
+
+  - name: Disable  SSH root login
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '#PermitRootLogin'
+      line: PermitRootLogin no
+  
+  - name: Set SSH LoginGraceTime to minute
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '#LoginGraceTime'
+      line: LoginGraceTime 60
+
+  - name: Configure SSH warning banner
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '#Banner'
+      line: Banner /etc/issue.net
+  
+  - name: Configure SSH MaxStartups
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      regexp: '#MaxStartups'
+      line: MaxStartups 10:30:60
+
+  - name: Install libpam-pwquality
+    ansible.builtin.apt:
+      name: libpam-pwquality
+      state: present
+      update_cache: yes
+
+  - name: Configure common-password
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-password
+      regexp: "pam_pwquality.so"
+      line: "password requisite pam_pwquality.so retry=3"
+  
+  - name: Configure common-password
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-password
+      regexp: "pam_pwhistory.so "
+      line: "password required pam_pwhistory.so remember=5"
+  
+  - name: Edit pwquality.conf 2
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#minlen'
+      line: minlen = 14
+
+  - name: Edit pwquality.conf 2
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#minclass'
+      line: minclass = 4
+
+  - name: Edit pwquality.conf 3
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#dcredit'
+      line: dcredit = -1
+
+  - name: Edit pwquality.conf 4
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#ucredit'
+      line: ucredit = -1
+
+  - name: Edit pwquality.conf 5
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#ocredit'
+      line: ocredit = -1
+
+  - name: Edit pwquality.conf 6
+    ansible.builtin.lineinfile:
+      path: /etc/security/pwquality.conf
+      state: present
+      regexp: '#lcredit'
+      line: lcredit = -1
+
+  - name: Add a line to a file /etc/pam.d/common-auth
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-auth
+      line: auth required pam_tally2.so onerr=fail silent audit deny=5
+      create: yes
+  
+  - name: Add a line to a file /etc/pam.d/common-account
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-account
+      line: account required pam_tally2.so
+      create: yes
+
+  - name: Set password expiration to 365 days
+    ansible.builtin.lineinfile:
+      path: /etc/login.defs
+      state: present
+      regexp: 'PASS_MAX_DAYS'
+      line: PASS_MAX_DAYS 365
+
+  - name: Set minimum days between password changes is configured
+    ansible.builtin.lineinfile:
+      path: /etc/login.defs
+      state: present
+      regexp: 'PASS_MIN_DAYS'
+      line: PASS_MIN_DAYS 1
+
+  - name: Set inactive password lock is 30 days
+    ansible.builtin.lineinfile:
+      path: /etc/default/useradd
+      state: present
+      regexp: 'INACTIVE'
+      line: INACTIVE=30
+  
+  - name: Set default user mask to 027
+    ansible.builtin.lineinfile:
+      path: /etc/login.defs
+      state: present
+      regexp: 'UMASK'
+      line: UMASK 027
+
+  - name: Set default user mask to 027 2
+    ansible.builtin.lineinfile:
+      path: /etc/login.defs
+      state: present
+      regexp: 'USERGROUPS_ENAB'
+      line: USERGROUPS_ENAB no
+
+  - name: Add a line to a file /etc/pam.d/common-session
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/common-session
+      line: session optional pam_umask.so
+      create: yes
+
+  - name: Restrict access to the su command
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/su
+      line: auth required pam_wheel.so use_uid
+      create: yes
+
+  - name: Edit /etc/sysctl.conf 
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf 
+      state: present
+      regexp: '#net.ipv4.conf.all.accept_source_route'
+      line: net.ipv4.conf.all.accept_source_route = 0
+
+  - name: Edit /etc/sysctl.conf 2
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf 
+      state: present
+      regexp: '#net.ipv6.conf.all.accept_source_route'
+      line: net.ipv6.conf.all.accept_source_route = 0
+
+  - name: Edit /etc/sysctl.conf 3
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf 
+      state: present
+      regexp: '#net.ipv4.conf.all.accept_redirects'
+      line: net.ipv4.conf.all.accept_redirects = 0
+
+  - name: Edit /etc/sysctl.conf 4
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf 
+      state: present
+      regexp: '#net.ipv6.conf.all.accept_redirects'
+      line: net.ipv6.conf.all.accept_redirects = 0
+
+  - name: Edit /etc/sysctl.conf 5
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf 
+      state: present
+      regexp: '#net.ipv4.conf.all.secure_redirects'
+      line: net.ipv4.conf.all.secure_redirects = 0
+
+  - name: Edit /etc/sysctl.conf 6
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv4.conf.all.secure_redirects'
+      line: net.ipv4.conf.default.secure_redirects = 0
+
+  - name: Edit /etc/sysctl.conf 7
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv4.conf.all.accept_redirects'
+      line: net.ipv4.conf.default.accept_redirects = 0
+  
+  - name: Edit /etc/sysctl.conf 8
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv6.conf.all.accept_redirects'
+      line: net.ipv6.conf.default.accept_redirects = 0
+
+  - name: Edit /etc/sysctl.conf 9
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv4.conf.all.accept_source_route'
+      line: net.ipv4.conf.default.accept_source_route = 0
+  
+  - name: Edit /etc/sysctl.conf 10
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv6.conf.all.accept_source_route'
+      line: net.ipv6.conf.default.accept_source_route = 0
+
+  - name: Edit /etc/sysctl.conf 11
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv6.conf.all.accept_source_route'
+      line: net.ipv6.conf.all.accept_ra = 0
+
+  - name: Edit /etc/sysctl.conf 12
+    ansible.builtin.lineinfile:
+      path: /etc/sysctl.conf
+      state: present
+      insertafter: '#net.ipv6.conf.all.accept_ra'
+      line: net.ipv6.conf.default.accept_ra = 0
+
+  - name: Configure ipv6
+    ansible.builtin.shell: 
+      cmd: sysctl -w net.ipv6.conf.all.accept_ra=0 && sysctl -w net.ipv6.conf.all.accept_redirects=0 && sysctl -w net.ipv6.conf.default.accept_ra=0 && sysctl -w net.ipv6.conf.default.accept_redirects=0
+
+  - name: Configure ipv4
+    ansible.builtin.shell:
+      cmd: sysctl -w net.ipv4.conf.all.rp_filter=1 && sysctl -w net.ipv4.conf.all.secure_redirects=0 && sysctl -w net.ipv4.conf.default.rp_filter=1 && sysctl -w net.ipv4.conf.default.secure_redirects=0
+
+  - name: Set strong MAC algorithms to use
+    ansible.builtin.lineinfile:
+      path: /etc/ssh/sshd_config
+      state: present
+      insertafter: '#RekeyLimit'
+      line: MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512,hmac-sha2-256
+
+  - name: Set default user shell timeout to 900
+    ansible.builtin.lineinfile:
+      path: /etc/profile.d/tmout.sh
+      state: present
+      line: readonly TMOUT=900 ; export TMOUT
+      create: yes
+
+  - name: Restrict access to the su command
+    ansible.builtin.shell: 
+      cmd: groupadd sugroup
+
+  - name: Restrict access to the su command
+    ansible.builtin.lineinfile:
+      path: /etc/pam.d/su
+      state: present
+      regexp: 'pam_wheel.so'
+      line: auth required pam_wheel.so use_uid group=sugroup
